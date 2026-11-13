@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Glass Clock Weather</string>
+    <string name="widget_name">Clock + Weather</string>
+    <string name="widget_desc">Analog clock with weather, humidity and a 4-day forecast.</string>
+</resources>
