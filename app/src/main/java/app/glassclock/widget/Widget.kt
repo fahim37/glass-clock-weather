@@ -131,10 +131,10 @@ object WidgetRenderer {
         }
         val pad = px(if (compact) 14f else 16f)
         v.setViewPadding(R.id.content, pad, pad, pad, pad)
-        v.setViewLayoutMargin(R.id.weather, RemoteViews.MARGIN_START, 14f * k, TypedValue.COMPLEX_UNIT_DIP)
+        v.setViewLayoutMargin(R.id.weather, RemoteViews.MARGIN_START, 12f * k, TypedValue.COMPLEX_UNIT_DIP)
 
         // ---- clock (the system moves the hands, so it stays smooth and exact)
-        val clockDp = if (compact) 120f else 140f
+        val clockDp = if (compact) 132f else 154f
         size(R.id.clock_box, clockDp)
         val cpx = px(clockDp)
         val clockId = if (s.seconds) R.id.clock_sec else R.id.clock_nosec

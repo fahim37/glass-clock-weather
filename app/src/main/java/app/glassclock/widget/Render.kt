@@ -160,7 +160,7 @@ object Render {
         val u = bmp.width / 200f
         val p = Paint(Paint.ANTI_ALIAS_FLAG)
         p.color = hsl(s.hue + 150f, 0.75f, 0.42f)
-        Canvas(bmp).drawCircle(100f * u, 24f * u, 5.5f * u, p)
+        Canvas(bmp).drawCircle(100f * u, 27f * u, 9f * u, p)
         return bmp
     }
 
