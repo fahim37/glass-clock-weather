@@ -32,8 +32,9 @@ Tap the weather side of the widget to switch to feels-like and wind.
   stored only on the phone, never in this repo.
 - Without a key, or if Google returns an error, it uses Open-Meteo (https://open-meteo.com,
   CC BY 4.0), which is free for non-commercial use.
-- Weather refreshes every 15 minutes, the shortest interval Android allows for background
-  work. That is two Google calls per refresh, about 5,800 a month.
+- Weather refreshes every 30 minutes, plus when you tap the widget if the data is older
+  than 10 minutes. That is two Google calls per refresh, about 2,900 a month, inside the
+  free 10,000.
 
 ## Notes
 

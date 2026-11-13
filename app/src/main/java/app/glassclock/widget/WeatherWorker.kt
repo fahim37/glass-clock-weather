@@ -12,7 +12,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import java.util.concurrent.TimeUnit
 
-/** Refreshes the weather every 15 minutes (the shortest interval Android allows). */
+/** Refreshes the weather every 30 minutes. */
 class WeatherWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     override fun doWork(): Result {
@@ -29,7 +29,7 @@ class WeatherWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params
             Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
         fun schedule(ctx: Context) {
-            val req = PeriodicWorkRequest.Builder(WeatherWorker::class.java, 15, TimeUnit.MINUTES)
+            val req = PeriodicWorkRequest.Builder(WeatherWorker::class.java, 30, TimeUnit.MINUTES)
                 .setConstraints(online())
                 .build()
             WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, req)

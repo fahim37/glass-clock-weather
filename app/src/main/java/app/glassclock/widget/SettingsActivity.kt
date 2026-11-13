@@ -151,7 +151,7 @@ class SettingsActivity : AppCompatActivity() {
         column.addView(TextView(this).apply {
             textSize = 14f
             text = "Paste a Google Weather API key to use Google's data. Without a key the widget uses Open-Meteo. " +
-                "Weather refreshes every 15 minutes."
+                "Weather refreshes every 30 minutes."
         }, spaced(4f))
         val key = EditText(this).apply {
             hint = "Google Weather API key"
