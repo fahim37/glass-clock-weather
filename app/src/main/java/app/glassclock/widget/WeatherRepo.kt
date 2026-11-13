@@ -68,7 +68,17 @@ object WeatherRepo {
      * no key) it falls back to Open-Meteo so the widget never goes blank. Call off the main thread.
      */
     fun refresh(ctx: Context): Boolean {
-        val s = Prefs.load(ctx)
+        var s = Prefs.load(ctx)
+        if (s.useDevice) {
+            val loc = try { DeviceLocation.current(ctx) } catch (e: Exception) { null }
+            if (loc != null) {
+                val lat = Math.round(loc.latitude * 10000.0) / 10000.0
+                val lon = Math.round(loc.longitude * 10000.0) / 10000.0
+                val name = DeviceLocation.placeName(ctx, lat, lon) ?: "My location"
+                Prefs.saveLocation(ctx, lat, lon, name)
+                s = s.copy(lat = lat, lon = lon, place = name)
+            }
+        }
         var googleError = ""
         if (s.apiKey.isNotBlank()) {
             try {

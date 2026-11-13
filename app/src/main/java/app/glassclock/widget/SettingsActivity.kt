@@ -1,5 +1,6 @@
 package app.glassclock.widget
 
+import android.Manifest
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
@@ -13,6 +14,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -30,6 +32,23 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var preview: FrameLayout
     private lateinit var status: TextView
     private lateinit var placeLabel: TextView
+    private lateinit var locSwitch: MaterialSwitch
+    private lateinit var locState: TextView
+    private lateinit var preciseButton: MaterialButton
+    private lateinit var backgroundButton: MaterialButton
+
+    private val askLocation = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        showLocationState()
+        if (DeviceLocation.hasAny(this)) refresh()
+    }
+    private val askBackground = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        showLocationState()
+        if (it) WeatherWorker.refreshNow(this)
+    }
+
+    private fun requestPrecise() {
+        askLocation.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
 
     private fun dp(v: Float): Int = (v * resources.displayMetrics.density).roundToInt()
 
@@ -117,6 +136,28 @@ class SettingsActivity : AppCompatActivity() {
 
         // ---- location
         column.addView(heading("Location", 18f), spaced(24f))
+        locSwitch = MaterialSwitch(this).apply {
+            text = "Use my precise location"
+            isChecked = s.useDevice
+            setOnCheckedChangeListener { _, on ->
+                update(s.copy(useDevice = on))
+                if (on && !DeviceLocation.hasPrecise(this@SettingsActivity)) requestPrecise() else if (on) refresh()
+                showLocationState()
+            }
+        }
+        column.addView(locSwitch, spaced(8f))
+        locState = TextView(this).apply { textSize = 13f }
+        column.addView(locState, spaced(4f))
+        preciseButton = button("Allow precise location") { requestPrecise() }
+        column.addView(preciseButton)
+        backgroundButton = button("Allow \"All the time\" for background updates") {
+            askBackground.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+        column.addView(backgroundButton)
+        column.addView(TextView(this).apply {
+            textSize = 14f
+            text = "Or pick a city instead:"
+        }, spaced(16f))
         placeLabel = TextView(this).apply { textSize = 14f }
         column.addView(placeLabel, spaced(4f))
         val city = EditText(this).apply {
@@ -139,7 +180,8 @@ class SettingsActivity : AppCompatActivity() {
                     if (found == null) {
                         status.text = "Could not find \"$q\". Check the spelling and your connection."
                     } else {
-                        update(s.copy(place = found.name, lat = found.lat, lon = found.lon))
+                        locSwitch.isChecked = false
+                        update(s.copy(place = found.name, lat = found.lat, lon = found.lon, useDevice = false))
                         refresh()
                     }
                 }
@@ -168,21 +210,47 @@ class SettingsActivity : AppCompatActivity() {
 
         showPlace()
         showStatus()
+        showLocationState()
         preview.post { showPreview() }
         WeatherWorker.schedule(this)
-        if (WeatherRepo.load(this) == null) refresh()
+        if (s.useDevice && !DeviceLocation.hasPrecise(this)) requestPrecise()
+        else if (WeatherRepo.load(this) == null || s.useDevice) refresh()
     }
 
     override fun onResume() {
         super.onResume()
+        if (::locState.isInitialized) showLocationState()
         if (::preview.isInitialized && preview.width > 0) showPreview()
+    }
+
+    private fun showLocationState() {
+        val precise = DeviceLocation.hasPrecise(this)
+        val any = DeviceLocation.hasAny(this)
+        val background = DeviceLocation.hasBackground(this)
+        locState.text = when {
+            !s.useDevice -> "Location is off. The widget uses the city below."
+            !any -> "Location permission is not allowed yet, so the widget uses the city below."
+            !precise -> "Only approximate location is allowed. Tap below and choose \"Precise\"."
+            !background -> "Precise location is on while this app is open. For updates in the background, choose \"Allow all the time\"."
+            else -> "Precise location is on, including background updates."
+        }
+        preciseButton.visibility = if (s.useDevice && !precise) View.VISIBLE else View.GONE
+        backgroundButton.visibility = if (s.useDevice && precise && !background) View.VISIBLE else View.GONE
     }
 
     // ------------------------------------------------------------------ actions
 
     private fun update(next: Settings) {
-        // The widget itself can flip "detail", so keep whatever is stored for that field.
-        s = next.copy(detail = Prefs.load(this).detail)
+        // The widget flips "detail" and the weather worker moves the location, so unless this
+        // change sets them itself, keep what is stored.
+        val stored = Prefs.load(this)
+        val movedHere = next.lat != s.lat || next.lon != s.lon || next.place != s.place
+        s = next.copy(
+            detail = stored.detail,
+            lat = if (movedHere) next.lat else stored.lat,
+            lon = if (movedHere) next.lon else stored.lon,
+            place = if (movedHere) next.place else stored.place
+        )
         Prefs.save(this, s)
         showPlace()
         showPreview()
@@ -195,6 +263,8 @@ class SettingsActivity : AppCompatActivity() {
         thread {
             WeatherRepo.refresh(app)
             runOnUiThread {
+                s = s.copy(lat = Prefs.load(app).lat, lon = Prefs.load(app).lon, place = Prefs.load(app).place)
+                showPlace()
                 showStatus()
                 showPreview()
                 ClockWeatherWidget.updateAll(app)

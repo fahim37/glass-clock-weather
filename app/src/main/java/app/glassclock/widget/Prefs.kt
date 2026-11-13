@@ -15,6 +15,7 @@ data class Settings(
     val lon: Double = 90.4125,
     val place: String = "Dhaka",
     val apiKey: String = "",          // Google Weather API key (optional)
+    val useDevice: Boolean = true,    // follow the phone's precise location
     val detail: Boolean = false       // weather side shows the details view
 )
 
@@ -36,6 +37,7 @@ object Prefs {
             lon = (p.getString("lon", null) ?: "").toDoubleOrNull() ?: d.lon,
             place = p.getString("place", d.place) ?: d.place,
             apiKey = p.getString("apiKey", d.apiKey) ?: d.apiKey,
+            useDevice = p.getBoolean("useDevice", d.useDevice),
             detail = p.getBoolean("detail", d.detail)
         )
     }
@@ -53,7 +55,17 @@ object Prefs {
             .putString("lon", s.lon.toString())
             .putString("place", s.place)
             .putString("apiKey", s.apiKey)
+            .putBoolean("useDevice", s.useDevice)
             .putBoolean("detail", s.detail)
+            .apply()
+    }
+
+    /** Writes only the location, so it never overwrites a setting changed at the same moment. */
+    fun saveLocation(ctx: Context, lat: Double, lon: Double, place: String) {
+        sp(ctx).edit()
+            .putString("lat", lat.toString())
+            .putString("lon", lon.toString())
+            .putString("place", place)
             .apply()
     }
 }

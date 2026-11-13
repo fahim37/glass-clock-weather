@@ -20,7 +20,13 @@ Open the app, or tap the clock in the widget.
 
 - Background: liquid glass, glass, solid or clear, with a transparency slider
 - Dark or light theme, accent colour, clock shape, second hand on or off
-- Units, and the city used for weather
+- Units, and where the weather is for: your precise location (default) or a city
+
+## Location
+
+On first open the app asks for location. Choose **Precise**. For the widget to follow you
+while the app is closed, also choose **Allow all the time** when the app asks. Without that,
+the location updates whenever you open the app, and the widget uses the last place in between.
 - Google Weather API key
 
 Tap the weather side of the widget to switch to feels-like and wind.
