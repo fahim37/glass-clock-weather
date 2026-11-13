@@ -16,7 +16,9 @@ same signing key, so a new APK installs over the old one and the widget stays in
 
 ## Settings
 
-Open the app, or tap the clock in the widget.
+Open the app, or long-press the widget and choose its settings.
+
+Tap the clock in the widget to open your Clock app's alarms.
 
 - Background: liquid glass, glass, solid or clear, with a transparency slider
 - Dark or light theme, accent colour, clock shape, second hand on or off

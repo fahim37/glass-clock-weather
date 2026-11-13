@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.os.Bundle
+import android.provider.AlarmClock
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
@@ -218,7 +219,10 @@ object WidgetRenderer {
             val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             val toggle = Intent(ctx, ClockWeatherWidget::class.java).setAction(ClockWeatherWidget.ACTION_TOGGLE)
             v.setOnClickPendingIntent(R.id.weather, PendingIntent.getBroadcast(ctx, 1, toggle, flags))
-            val open = Intent(ctx, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Tapping the clock opens the phone's Clock app on its alarms; settings open if no clock app answers.
+            val alarms = Intent(AlarmClock.ACTION_SHOW_ALARMS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val open = if (alarms.resolveActivity(ctx.packageManager) != null) alarms
+            else Intent(ctx, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             v.setOnClickPendingIntent(R.id.clock_box, PendingIntent.getActivity(ctx, 2, open, flags))
         }
         return v
