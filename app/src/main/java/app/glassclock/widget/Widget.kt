@@ -101,7 +101,7 @@ object WidgetRenderer {
         val density = ctx.resources.displayMetrics.density
         val compact = hDp < 185f
         val baseH = if (compact) 152f else 196f
-        val k = minOf(wDp / 358f, hDp / baseH).coerceIn(0.7f, 1.35f)
+        val k = minOf(wDp / 346f, hDp / baseH).coerceIn(0.7f, 1.35f)
 
         val shadow = s.dark && (s.bg == "clear" || s.bg == "liquid")
         val v = RemoteViews(ctx.packageName, if (shadow) R.layout.widget_shadow else R.layout.widget)
@@ -130,7 +130,8 @@ object WidgetRenderer {
             v.setImageViewBitmap(R.id.bg, Render.background((wDp * rd).roundToInt(), (hDp * rd).roundToInt(), rd * k, s))
         }
         val pad = px(if (compact) 14f else 16f)
-        v.setViewPadding(R.id.content, pad, pad, pad, pad)
+        val side = px(10f)
+        v.setViewPadding(R.id.content, side, pad, side + px(4f), pad)
         v.setViewLayoutMargin(R.id.weather, RemoteViews.MARGIN_START, 12f * k, TypedValue.COMPLEX_UNIT_DIP)
 
         // ---- clock (the system moves the hands, so it stays smooth and exact)
